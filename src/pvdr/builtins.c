@@ -578,7 +578,10 @@ static int quantize_annotate(node_t *call)
 	     call->call.vargs->dyn.type != TYPE_INT) ||
 	    call->call.vargs->next ||
 	    call->parent->type != TYPE_METHOD)
+	{
+		_e("bad arguments\n");
 		return -EINVAL;
+	}
 
 	for (rec = map->map.rec->rec.vargs; rec->next; rec = rec->next);
 

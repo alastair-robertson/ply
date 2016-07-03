@@ -287,8 +287,8 @@ int map_setup(node_t *script)
 		}
 
 		mdyn->mapfd = bpf_map_create(BPF_MAP_TYPE_HASH, ksize, vsize, MAP_LEN);
-		if (mdyn->mapfd <= 0) {
-			_pe("failed creating map");
+		if (mdyn->mapfd < 0) {
+			perror("failed creating map");
 			return mdyn->mapfd;
 		}
 	}

@@ -155,19 +155,16 @@ int main(int argc, char **argv)
 
 		pvdr = node_get_pvdr(probe);
 		num = pvdr->setup(probe, prog);
-		if (num < 0)
-			break;
+		if (num < 0) {
+			err = num;
+			goto err;
+		}
 	}
 
 	_d("compilation ok");
 	if (G.dump)
 		goto done;
 	
-	if (num < 0) {
-		err = num;
-		goto err;
-	}
-
 	if (G.timeout) {
 		siginterrupt(SIGALRM, 1);
 		signal(SIGALRM, sigint);

@@ -191,7 +191,11 @@ static int __kprobe_setup(node_t *probe, prog_t *prog, const char *type)
 
 	kp->bfd = bpf_prog_load(prog->insns, prog->ip - prog->insns);
 	if (kp->bfd < 0) {
-		perror("bpf");
+		perror("bpf_prog_load");
+		fprintf(stderr, "This version of ply is compiled against kernel version %d.%d.%d\n",
+		                 (LINUX_VERSION_CODE>>16)&0xf,
+		                 (LINUX_VERSION_CODE>> 8)&0xf,
+		                 (LINUX_VERSION_CODE>> 0)&0xf);
 		fprintf(stderr, "bpf verifier:\n%s\n", bpf_log_buf);
 		return -EINVAL;
 	}
@@ -252,11 +256,11 @@ pvdr_t kprobe_pvdr = {
 
 pvdr_t kretprobe_pvdr = {
 	.name = "kretprobe",
-	.annotate   =    kprobe_annotate,
-	.loc_assign =    kprobe_loc_assign,
-	.compile    =    kprobe_compile,
+	.annotate   = kprobe_annotate,
+	.loc_assign = kprobe_loc_assign,
+	.compile    = kprobe_compile,
 	.setup      = kretprobe_setup,
-	.teardown   =    kprobe_teardown,
+	.teardown   = kprobe_teardown,
 };
 
 __attribute__((constructor))
