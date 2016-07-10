@@ -422,9 +422,13 @@ static int quantize_compile(node_t *call, prog_t *prog)
 static int quantize_normalize(int log2, char const **suffix)
 {
 	static const char *s[] = { NULL, "k", "M", "G", "T", "P", "Z" };
+	int s_len = sizeof(s)/sizeof(char*);
 	int i;
 
 	for (i = 0; log2 >= 10; i++, log2 -= 10);
+
+	if (i >= s_len)
+		i = 0;
 
 	*suffix = s[i];
 	return (1 << log2);
@@ -540,6 +544,9 @@ static void quantize_dump(FILE *fp, node_t *map, void *data, int len)
 	int64_t *count = data + rec->dyn.size;
 	int64_t seg_tot = *count;
 	int seg_len = 1;
+
+	if (len == 0)
+		return;
 
 	for (; len > 1; len--) {
 		key += entry_size;
