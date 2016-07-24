@@ -112,6 +112,7 @@ static int _node_ast_dump(node_t *n, void *indent)
 	case TYPE_RETURN:
 	case TYPE_NOT:
 	case TYPE_REC:
+	case TYPE_STACKMAP:
 		fprintf(stderr, "<%s> ", type_str(n->type));
 		break;
 		
@@ -199,7 +200,8 @@ mdyn_t *node_map_get_mdyn(node_t *map)
 	mdyn_t *mdyn;
 
 	for (mdyn = script->dyn.script.mdyns; mdyn; mdyn = mdyn->next) {
-		if (!strcmp(mdyn->map->string, map->string))
+		if ((mdyn->map->string && map->string && !strcmp(mdyn->map->string, map->string)) ||
+		    (mdyn->map->type == TYPE_STACKMAP && map->type == TYPE_STACKMAP))
 			return mdyn;
 	}
 

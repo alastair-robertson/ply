@@ -120,18 +120,20 @@ typedef struct script {
 } script_t;
 
 #define NODE_TYPE_TABLE \
-	TYPE(TYPE_NONE, "none")			\
+	TYPE(TYPE_NONE, "none")		\
 	TYPE(TYPE_SCRIPT, "script")		\
 	TYPE(TYPE_PROBE, "probe")		\
-	TYPE(TYPE_CALL, "call")			\
+	TYPE(TYPE_CALL, "call")		\
 	TYPE(TYPE_ASSIGN, "assign")		\
 	TYPE(TYPE_METHOD, "method")		\
 	TYPE(TYPE_RETURN, "return")		\
 	TYPE(TYPE_BINOP, "binop")		\
-	TYPE(TYPE_NOT, "not")			\
-	TYPE(TYPE_MAP, "map")			\
-	TYPE(TYPE_REC, "rec")			\
-	TYPE(TYPE_INT, "int")			\
+	TYPE(TYPE_NOT, "not")		\
+	TYPE(TYPE_MAP, "map")		\
+	TYPE(TYPE_STACK_ID, "stack_id")		\
+	TYPE(TYPE_STACKMAP, "stackmap")		\
+	TYPE(TYPE_REC, "rec")		\
+	TYPE(TYPE_INT, "int")		\
 	TYPE(TYPE_STR, "str")
 
 #define TYPE(_type, _typestr) _type,
@@ -247,6 +249,7 @@ node_t *node_int_new     (int64_t val);
 node_t *node_rec_new     (node_t *vargs);
 node_t *node_map_new     (char *name, node_t *rec);
 node_t *node_var_new     (char *name);
+node_t *node_stackmap_new();
 node_t *node_not_new     (node_t *expr);
 node_t *node_return_new  (node_t *expr);
 node_t *node_binop_new   (node_t *left, char *opstr, node_t *right);

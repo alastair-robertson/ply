@@ -278,15 +278,19 @@ int map_setup(node_t *script)
 			continue;
 		}
 
-		if (!strcmp(mdyn->map->string, "printf")) {
-			ksize = mdyn->map->dyn.size;
-			vsize = mdyn->map->call.vargs->next->dyn.size;
+		if (mdyn->map->type == TYPE_STACKMAP) {
+			mdyn->mapfd = bpf_map_create(BPF_MAP_TYPE_STACK_TRACE, 8, 8, 10);
 		} else {
-			ksize = mdyn->map->map.rec->dyn.size;
-			vsize = mdyn->map->dyn.size;
-		}
+			if (!strcmp(mdyn->map->string, "printf")) {
+				ksize = mdyn->map->dyn.size;
+				vsize = mdyn->map->call.vargs->next->dyn.size;
+			} else {
+				ksize = mdyn->map->map.rec->dyn.size;
+				vsize = mdyn->map->dyn.size;
+			}
 
-		mdyn->mapfd = bpf_map_create(BPF_MAP_TYPE_HASH, ksize, vsize, MAP_LEN);
+			mdyn->mapfd = bpf_map_create(BPF_MAP_TYPE_HASH, ksize, vsize, MAP_LEN);
+		}
 		if (mdyn->mapfd < 0) {
 			perror("failed creating map");
 			return mdyn->mapfd;

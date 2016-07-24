@@ -661,6 +661,7 @@ static builtin_t builtins[] = {
 	BUILTIN_LOC(count),
 	BUILTIN_LOC(quantize),
 	BUILTIN(log2),
+	BUILTIN(stack),
 
 	BUILTIN(strcmp),
 

@@ -265,7 +265,8 @@ static int type_infer_map(node_t *script, node_t *n)
 	mdyn_t *mdyn;
 
 	for (mdyn = script->dyn.script.mdyns; mdyn; mdyn = mdyn->next) {
-		if (!strcmp(mdyn->map->string, n->string))
+		if ((mdyn->map->string && n->string && !strcmp(mdyn->map->string, n->string)) ||
+		    (mdyn->map->type == TYPE_STACKMAP && n->type == TYPE_STACKMAP))
 			return type_sync_map(n, mdyn->map);
 	}
 
@@ -347,6 +348,7 @@ static int type_infer_post(node_t *n, void *_script)
 			n->dyn.size = sz;
 		break;
 	case TYPE_MAP:
+	case TYPE_STACKMAP:
 		err = type_infer_map(script, n);
 		if (err)
 			return err;
