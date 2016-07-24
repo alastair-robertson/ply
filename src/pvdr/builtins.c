@@ -607,6 +607,46 @@ static int quantize_annotate(node_t *call)
 	return 0;
 }
 
+static int stack_compile(node_t *call, prog_t *prog)
+{
+
+	emit_stack_zero(prog, call);
+
+	emit(prog, MOV(BPF_REG_1, BPF_REG_10));
+	emit(prog, ALU_IMM(ALU_OP_ADD, BPF_REG_1, call->dyn.addr));
+	emit(prog, MOV_IMM(BPF_REG_2, call->dyn.size));
+
+	emit_ld_mapfd(prog, BPF_REG_1, node_map_get_fd(call->call.vargs));
+	emit(prog, CALL(BPF_FUNC_get_stackid));
+	return 0;
+}
+
+static int stack_annotate(node_t *call)
+{
+  node_t *script, *stackmap;
+
+	if (call->call.vargs) {
+		_e("stack takes zero arguments\n");
+		return -EINVAL;
+	}
+	if (call->parent->type != TYPE_REC &&
+	    call->parent->type != TYPE_ASSIGN) {
+		_e("stack should only be used in hashes or assignments\n");
+		return -EINVAL;
+	}
+
+	call->dyn.type = TYPE_STACK_ID;
+	call->dyn.size = sizeof(int64_t);
+
+  // TODO don't always create a new one
+  call->call.vargs = node_stackmap_new();
+  call->call.vargs->parent = call;
+  call->call.vargs->dyn.type = TYPE_STACKMAP;
+  call->call.n_vargs = 1;
+
+	return 0;
+}
+
 
 #define BUILTIN_INT_VOID(_name) {			\
 		.name     = #_name,			\
@@ -719,6 +759,9 @@ static int default_loc_assign(node_t *call)
 			varg->dyn.addr = node_probe_stack_get(probe, varg->dyn.size);
 			continue;
 
+    case TYPE_STACKMAP:
+      // TODO
+      continue;
 
 		default:
 			_e("argument %d of '%s' is of unknown type '%s'",

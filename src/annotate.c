@@ -151,6 +151,14 @@ static int loc_assign_pre(node_t *n, void *_probe)
 		c->dyn.addr = node_probe_stack_get(probe, c->dyn.size);
 		return 0;
 
+	case TYPE_STACKMAP:
+	case TYPE_STACK_ID:
+		// TODO
+		printf("blah\n");
+		return 0;
+		c->dyn.loc = LOC_STACK;
+		c->dyn.addr = node_probe_stack_get(probe, c->dyn.size);
+
 	case TYPE_REC:
 		addr = n->dyn.addr;
 		node_foreach(c, n->rec.vargs) {
@@ -393,6 +401,11 @@ static int static_post(node_t *n, void *_null)
 		err = node_get_pvdr(n)->annotate(n);
 		if (err)
 			return err;
+		break;
+	case TYPE_STACKMAP:
+	case TYPE_STACK_ID:
+		// doesn't do anything useful...
+		n->dyn.type = TYPE_STACKMAP;
 		break;
 	default:
 		break;

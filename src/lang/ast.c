@@ -297,6 +297,19 @@ node_t *node_var_new(char *name)
 	return __node_map_new(name, rec, 1);
 }
 
+node_t *node_stackmap_new()
+{
+	node_t *n = node_new(TYPE_STACKMAP);
+
+	node_t *key = node_int_new(0);
+	node_t *rec = node_rec_new(key);
+
+	n->map.is_var = 0;
+	n->map.rec = rec;
+
+	return n;
+}
+
 node_t *node_not_new(node_t *expr)
 {
 	node_t *n = node_new(TYPE_NOT);
@@ -586,6 +599,11 @@ int node_walk(node_t *n,
 
 	case TYPE_MAP:
 		do_walk(n->map.rec);
+		break;
+
+	case TYPE_STACK_ID:
+    printf("shouldn't be here?\n");
+    assert(0);
 		break;
 
 	case TYPE_REC:
