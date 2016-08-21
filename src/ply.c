@@ -113,7 +113,7 @@ void sigint(int sigint)
 int main(int argc, char **argv)
 {
 	FILE *sfp, *enable;
-	node_t *probe, *script;
+	node_t *probe, *script = NULL;
 	prog_t *prog = NULL;
 	pvdr_t *pvdr;
 	int err = 0, num;
