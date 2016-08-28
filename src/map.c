@@ -96,11 +96,27 @@ static void dump_str(FILE *fp, node_t *str, void *data)
 
 static void dump_stack_id(FILE *fp, node_t *n, void *data)
 {
-  node_t *script;
+  node_t *script = node_get_script(n);
+  int stackmapfd = script->script.stackmapfd;
+	size_t entry_size = 4 + 8; // TODO key sz + val sz
+	char *sdata = malloc(entry_size*MAP_LEN);
+	char *key = data, *val = sdata; // TODO + key sz
+	int err;
 
-  script = node_get_script(n);
+	fprintf(fp, "data: %8" PRId64 "\n", *((int64_t *)data));
+	fprintf(fp, "key: %8" PRId64 "\n", *((int64_t *)key));
+	fprintf(fp, "val1: %8" PRId64 "\n", *((int64_t *)val));
 
-	fprintf(fp, "stack: %8" PRId64, *((int64_t *)data));
+  err = bpf_map_lookup(stackmapfd, key, val);
+  perror("failed lookup");
+  fprintf(fp, "%d\n", err);
+  if (err)
+    goto out_free;
+
+	fprintf(fp, "val2: %8" PRId64 "\n", *((int64_t *)val));
+
+out_free:
+  free(sdata);
 }
 
 void dump_rec(FILE *fp, node_t *rec, void *data, int len)
@@ -311,7 +327,7 @@ int map_setup(node_t *script)
       return 0;
 		}
 
-    script->script.stackmapfd = bpf_map_create(BPF_MAP_TYPE_STACK_TRACE, 4, 8, 10);
+    script->script.stackmapfd = bpf_map_create(BPF_MAP_TYPE_STACK_TRACE, 4, 8, MAP_LEN);
     if (script->script.stackmapfd < 0) {
       perror("failed creating map");
       return script->script.stackmapfd;
