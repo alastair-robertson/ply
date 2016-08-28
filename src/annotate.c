@@ -141,6 +141,7 @@ static int loc_assign_pre(node_t *n, void *_probe)
 		return 0;
 
 	case TYPE_MAP:
+	case TYPE_STACKMAP:
 		/* upper node wants result in a register, but we still
 		 * need stack space to bounce the data in */
 		if (n->dyn.loc == LOC_REG)
@@ -151,13 +152,10 @@ static int loc_assign_pre(node_t *n, void *_probe)
 		c->dyn.addr = node_probe_stack_get(probe, c->dyn.size);
 		return 0;
 
-	case TYPE_STACKMAP:
 	case TYPE_STACK_ID:
 		// TODO
 		printf("blah\n");
 		return 0;
-		c->dyn.loc = LOC_STACK;
-		c->dyn.addr = node_probe_stack_get(probe, c->dyn.size);
 
 	case TYPE_REC:
 		addr = n->dyn.addr;
@@ -356,7 +354,7 @@ static int type_infer_post(node_t *n, void *_script)
 			n->dyn.size = sz;
 		break;
 	case TYPE_MAP:
-	case TYPE_STACKMAP:
+//	case TYPE_STACKMAP:
 		err = type_infer_map(script, n);
 		if (err)
 			return err;

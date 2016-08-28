@@ -94,6 +94,16 @@ static void dump_str(FILE *fp, node_t *str, void *data)
 	fprintf(fp, "%-*.*s", size, size, (const char *)data);
 }
 
+static void dump_stack_id(FILE *fp, node_t *n, void *data)
+{
+  node_t *script, *stackmap;
+
+  script = node_get_script(n);
+  stackmap = script->script.stackmap;
+
+	fprintf(fp, "stack: %8" PRId64, *((int64_t *)data));
+}
+
 void dump_rec(FILE *fp, node_t *rec, void *data, int len)
 {
 	node_t *first, *varg;
@@ -144,6 +154,9 @@ static void dump_node(FILE *fp, node_t *n, void *data)
 	case TYPE_STR:
 		dump_str(fp, n, data);
 		break;
+  case TYPE_STACK_ID:
+    dump_stack_id(fp, n, data);
+    break;
 	case TYPE_REC:
 		dump_rec(fp, n, data, n->rec.n_vargs);
 		break;
@@ -279,7 +292,7 @@ int map_setup(node_t *script)
 		}
 
 		if (mdyn->map->type == TYPE_STACKMAP) {
-			mdyn->mapfd = bpf_map_create(BPF_MAP_TYPE_STACK_TRACE, 8, 8, 10);
+			mdyn->mapfd = bpf_map_create(BPF_MAP_TYPE_STACK_TRACE, 4, 8, 10);
 		} else {
 			if (!strcmp(mdyn->map->string, "printf")) {
 				ksize = mdyn->map->dyn.size;
@@ -309,7 +322,8 @@ int map_teardown(node_t *script)
 
 	for (mdyn = script->dyn.script.mdyns; mdyn; mdyn = mdyn->next) {
 		if (mdyn->mapfd) {
-			if (strcmp(mdyn->map->string, "printf"))
+      if (mdyn->map->type != TYPE_STACKMAP &&
+          strcmp(mdyn->map->string, "printf"))
 				dump_mdyn(mdyn);
 
 			close(mdyn->mapfd);

@@ -117,7 +117,8 @@ void printf_drain(node_t *script)
 	int err;
 
 	for (mdyn = script->dyn.script.mdyns; mdyn; mdyn = mdyn->next)
-		if (!strcmp(mdyn->map->string, "printf"))
+    if (mdyn->map->type != TYPE_STACKMAP &&
+		    !strcmp(mdyn->map->string, "printf"))
 			break;
 
 	if (!mdyn) {

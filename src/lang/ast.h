@@ -117,6 +117,7 @@ typedef struct probe {
 
 typedef struct script {
 	node_t *probes;
+  node_t *stackmap;
 } script_t;
 
 #define NODE_TYPE_TABLE \

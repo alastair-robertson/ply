@@ -561,6 +561,7 @@ int node_walk(node_t *n,
 	switch (n->type) {
 	case TYPE_SCRIPT:
 		do_list(n->script.probes);
+		do_list(n->script.stackmap);
 		break;
 
 	case TYPE_PROBE:
@@ -598,6 +599,7 @@ int node_walk(node_t *n,
 		break;
 
 	case TYPE_MAP:
+	case TYPE_STACKMAP:
 		do_walk(n->map.rec);
 		break;
 
