@@ -141,7 +141,6 @@ static int loc_assign_pre(node_t *n, void *_probe)
 		return 0;
 
 	case TYPE_MAP:
-	case TYPE_STACKMAP:
 		/* upper node wants result in a register, but we still
 		 * need stack space to bounce the data in */
 		if (n->dyn.loc == LOC_REG)
@@ -271,8 +270,7 @@ static int type_infer_map(node_t *script, node_t *n)
 	mdyn_t *mdyn;
 
 	for (mdyn = script->dyn.script.mdyns; mdyn; mdyn = mdyn->next) {
-		if ((mdyn->map->string && n->string && !strcmp(mdyn->map->string, n->string)) ||
-		    (mdyn->map->type == TYPE_STACKMAP && n->type == TYPE_STACKMAP))
+		if (mdyn->map->string && n->string && !strcmp(mdyn->map->string, n->string))
 			return type_sync_map(n, mdyn->map);
 	}
 
@@ -354,7 +352,6 @@ static int type_infer_post(node_t *n, void *_script)
 			n->dyn.size = sz;
 		break;
 	case TYPE_MAP:
-//	case TYPE_STACKMAP:
 		err = type_infer_map(script, n);
 		if (err)
 			return err;
@@ -400,10 +397,8 @@ static int static_post(node_t *n, void *_null)
 		if (err)
 			return err;
 		break;
-	case TYPE_STACKMAP:
 	case TYPE_STACK_ID:
 		// doesn't do anything useful...
-		n->dyn.type = TYPE_STACKMAP;
 		break;
 	default:
 		break;

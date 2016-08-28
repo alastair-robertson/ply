@@ -112,7 +112,6 @@ static int _node_ast_dump(node_t *n, void *indent)
 	case TYPE_RETURN:
 	case TYPE_NOT:
 	case TYPE_REC:
-	case TYPE_STACKMAP:
 		fprintf(stderr, "<%s> ", type_str(n->type));
 		break;
 		
@@ -200,8 +199,7 @@ mdyn_t *node_map_get_mdyn(node_t *map)
 	mdyn_t *mdyn;
 
 	for (mdyn = script->dyn.script.mdyns; mdyn; mdyn = mdyn->next) {
-		if ((mdyn->map->string && map->string && !strcmp(mdyn->map->string, map->string)) ||
-		    (mdyn->map->type == TYPE_STACKMAP && map->type == TYPE_STACKMAP))
+		if (mdyn->map->string && map->string && !strcmp(mdyn->map->string, map->string))
 			return mdyn;
 	}
 
@@ -295,19 +293,6 @@ node_t *node_var_new(char *name)
 	node_t *rec = node_rec_new(key);
 
 	return __node_map_new(name, rec, 1);
-}
-
-node_t *node_stackmap_new()
-{
-	node_t *n = node_new(TYPE_STACKMAP);
-
-	node_t *key = node_int_new(0);
-	node_t *rec = node_rec_new(key);
-
-	n->map.is_var = 0;
-	n->map.rec = rec;
-
-	return n;
 }
 
 node_t *node_not_new(node_t *expr)
@@ -561,7 +546,6 @@ int node_walk(node_t *n,
 	switch (n->type) {
 	case TYPE_SCRIPT:
 		do_list(n->script.probes);
-		do_list(n->script.stackmap);
 		break;
 
 	case TYPE_PROBE:
@@ -599,7 +583,6 @@ int node_walk(node_t *n,
 		break;
 
 	case TYPE_MAP:
-	case TYPE_STACKMAP:
 		do_walk(n->map.rec);
 		break;
 

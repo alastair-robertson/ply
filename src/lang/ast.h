@@ -117,7 +117,7 @@ typedef struct probe {
 
 typedef struct script {
 	node_t *probes;
-  node_t *stackmap;
+  int stackmapfd;
 } script_t;
 
 #define NODE_TYPE_TABLE \
@@ -132,7 +132,6 @@ typedef struct script {
 	TYPE(TYPE_NOT, "not")		\
 	TYPE(TYPE_MAP, "map")		\
 	TYPE(TYPE_STACK_ID, "stack_id")		\
-	TYPE(TYPE_STACKMAP, "stackmap")		\
 	TYPE(TYPE_REC, "rec")		\
 	TYPE(TYPE_INT, "int")		\
 	TYPE(TYPE_STR, "str")
@@ -250,7 +249,6 @@ node_t *node_int_new     (int64_t val);
 node_t *node_rec_new     (node_t *vargs);
 node_t *node_map_new     (char *name, node_t *rec);
 node_t *node_var_new     (char *name);
-node_t *node_stackmap_new();
 node_t *node_not_new     (node_t *expr);
 node_t *node_return_new  (node_t *expr);
 node_t *node_binop_new   (node_t *left, char *opstr, node_t *right);

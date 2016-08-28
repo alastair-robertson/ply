@@ -613,25 +613,15 @@ static int stack_compile(node_t *call, prog_t *prog)
 
 	emit_stack_zero(prog, call);
 
-	emit_ld_mapfd(prog, BPF_REG_2, node_map_get_fd(script->script.stackmap));
+	emit_ld_mapfd(prog, BPF_REG_2, script->script.stackmapfd);
 	emit(prog, MOV_IMM(BPF_REG_3, 0x400)); // flags TODO    
 	emit(prog, CALL(BPF_FUNC_get_stackid));
 	return 0;
 }
 
-static int stack_loc_assign(node_t *call)
-{
-	mdyn_t *mdyn;
-  node_t *script = node_get_script(call);
-
-  script->script.stackmap->dyn.loc = LOC_VIRTUAL;
-
-	return 0;
-}
-
 static int stack_annotate(node_t *call)
 {
-  node_t *script, *stackmap;
+  node_t *script;
 
 	if (call->call.vargs) {
 		_e("stack takes zero arguments\n");
@@ -647,16 +637,7 @@ static int stack_annotate(node_t *call)
 	call->dyn.size = sizeof(int64_t);
 
   script = node_get_script(call);
-  if (!script->script.stackmap) {
-    script->script.stackmap = node_stackmap_new();
-    script->script.stackmap->parent = script;
-  }
-
-  // TODO don't always create a new one
-//  call->call.vargs = node_stackmap_new();
-//  call->call.vargs->parent = call;
-//  call->call.vargs->dyn.type = TYPE_STACKMAP;
-//  call->call.n_vargs = 1;
+  script->script.stackmapfd = -1; // -1 is used to show it's needed
 
 	return 0;
 }
@@ -715,7 +696,7 @@ static builtin_t builtins[] = {
 	BUILTIN_LOC(count),
 	BUILTIN_LOC(quantize),
 	BUILTIN(log2),
-	BUILTIN_LOC(stack),
+	BUILTIN(stack),
 
 	BUILTIN(strcmp),
 

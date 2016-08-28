@@ -96,10 +96,9 @@ static void dump_str(FILE *fp, node_t *str, void *data)
 
 static void dump_stack_id(FILE *fp, node_t *n, void *data)
 {
-  node_t *script, *stackmap;
+  node_t *script;
 
   script = node_get_script(n);
-  stackmap = script->script.stackmap;
 
 	fprintf(fp, "stack: %8" PRId64, *((int64_t *)data));
 }
@@ -291,24 +290,33 @@ int map_setup(node_t *script)
 			continue;
 		}
 
-		if (mdyn->map->type == TYPE_STACKMAP) {
-			mdyn->mapfd = bpf_map_create(BPF_MAP_TYPE_STACK_TRACE, 4, 8, 10);
-		} else {
-			if (!strcmp(mdyn->map->string, "printf")) {
-				ksize = mdyn->map->dyn.size;
-				vsize = mdyn->map->call.vargs->next->dyn.size;
-			} else {
-				ksize = mdyn->map->map.rec->dyn.size;
-				vsize = mdyn->map->dyn.size;
-			}
+    if (!strcmp(mdyn->map->string, "printf")) {
+      ksize = mdyn->map->dyn.size;
+      vsize = mdyn->map->call.vargs->next->dyn.size;
+    } else {
+      ksize = mdyn->map->map.rec->dyn.size;
+      vsize = mdyn->map->dyn.size;
+    }
 
-			mdyn->mapfd = bpf_map_create(BPF_MAP_TYPE_HASH, ksize, vsize, MAP_LEN);
-		}
+    mdyn->mapfd = bpf_map_create(BPF_MAP_TYPE_HASH, ksize, vsize, MAP_LEN);
 		if (mdyn->mapfd < 0) {
 			perror("failed creating map");
 			return mdyn->mapfd;
 		}
 	}
+
+  if (script->script.stackmapfd == -1) {
+		if (G.dump) {
+			script->script.stackmapfd = dumpfd++;
+      return 0;
+		}
+
+    script->script.stackmapfd = bpf_map_create(BPF_MAP_TYPE_STACK_TRACE, 4, 8, 10);
+    if (script->script.stackmapfd < 0) {
+      perror("failed creating map");
+      return script->script.stackmapfd;
+    }
+  }
 
 	return 0;
 }
@@ -322,8 +330,7 @@ int map_teardown(node_t *script)
 
 	for (mdyn = script->dyn.script.mdyns; mdyn; mdyn = mdyn->next) {
 		if (mdyn->mapfd) {
-      if (mdyn->map->type != TYPE_STACKMAP &&
-          strcmp(mdyn->map->string, "printf"))
+      if (strcmp(mdyn->map->string, "printf"))
 				dump_mdyn(mdyn);
 
 			close(mdyn->mapfd);
