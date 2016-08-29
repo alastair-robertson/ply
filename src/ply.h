@@ -25,6 +25,7 @@
 #include "lang/ast.h"
 
 #define MAP_LEN 512
+#define STACK_STORAGE_SIZE 256
 
 #define PRINTF_BUF_LEN MAP_LEN
 #define PRINTF_META_OF (1 << 30)

@@ -613,10 +613,19 @@ static int stack_compile(node_t *call, prog_t *prog)
 
 	emit_stack_zero(prog, call);
 
+	emit(prog, MOV(BPF_REG_1, BPF_REG_9));
 	emit_ld_mapfd(prog, BPF_REG_2, script->script.stackmapfd);
 	emit(prog, MOV_IMM(BPF_REG_3, 0x400)); // flags TODO    
 	emit(prog, CALL(BPF_FUNC_get_stackid));
+
+  emit(prog, STXDW(BPF_REG_10, call->dyn.addr, BPF_REG_0));
+
 	return 0;
+}
+
+static int stack_loc_assign(node_t *call)
+{
+	return reg_loc_assign(call);
 }
 
 static int stack_annotate(node_t *call)
@@ -638,6 +647,16 @@ static int stack_annotate(node_t *call)
 
   script = node_get_script(call);
   script->script.stackmapfd = -1; // -1 is used to show it's needed
+
+	intptr_t reg = arch_reg_retval();
+	if (reg < 0)
+  {
+		return reg;
+  }
+
+	call->call.vargs = node_int_new(reg);
+//	call->dyn.type = TYPE_INT;
+//	call->dyn.size = sizeof(int64_t);
 
 	return 0;
 }
@@ -696,7 +715,7 @@ static builtin_t builtins[] = {
 	BUILTIN_LOC(count),
 	BUILTIN_LOC(quantize),
 	BUILTIN(log2),
-	BUILTIN(stack),
+	BUILTIN_LOC(stack),
 
 	BUILTIN(strcmp),
 
